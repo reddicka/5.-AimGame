@@ -1,9 +1,12 @@
-const startBtn = document.querySelector('#start');
 const screens = document.querySelectorAll('.screen');
+
+const startBtn = document.querySelector('#start');
 const timeList = document.querySelector('#time-list');
+
 const timeEl = document.querySelector('#time');
 const scoreEl = document.querySelector('#currentScore');
 const board = document.querySelector('#board');
+
 const colors = [
     '#F58236',
     '#F5DC62',
@@ -14,8 +17,9 @@ const colors = [
     '#C6F564',
     '#CC58F5',
 ];
-let time = 4;
+let time = 0;
 let score = 0;
+let bestScore = 0;
 
 // ======== СОБЫТИЯ ========
 
@@ -27,7 +31,7 @@ startBtn.addEventListener('click', (event) => {
 timeList.addEventListener('click', (event) => {
     // Делeгирование событый
     if (event.target.classList.contains('time-btn')) {
-        time = parseInt(event.target.getAttribute('data-time'));
+        time = event.target.getAttribute('data-time');
         screens[1].classList.add('up');
         startGame();
     }
@@ -35,23 +39,13 @@ timeList.addEventListener('click', (event) => {
 
 board.addEventListener('click', (event) => {
     if (event.target.classList.contains('circle')) {
-        score++;
-        scoreEl.innerHTML = score;
+        setScore(++score);
         event.target.remove();
         createRandomCircle();
     } else if (event.target.classList.contains('again-btn')) {
-        screens[1].classList.remove('up');
-        // ТУТ ЕЩЕ НЕ СДЕЛАНО
-        // board.childNodes.remove();
-
-        timeEl.parentElement.classList.remove('hide');
-        scoreEl.parentNode.classList.remove('hide');
-
-        score = 0;
-        board.innerHTML = '';
+        tryAgain();
     } else {
-        score--;
-        scoreEl.innerHTML = score;
+        setScore(--score);
     }
 });
 
@@ -86,14 +80,35 @@ function setTime(value) {
     }
 }
 
-function finishGame() {
-    // timeEl.parentNode.remove();
-    // scoreEl.parentNode.remove();
-    timeEl.classList.add('hide');
-    scoreEl.classList.add('hide');
+function setScore(value) {
+    scoreEl.innerHTML = value;
+}
 
-    board.innerHTML = `<div><h1>Счет: <span class="primary">${score}</span></h1>
-    <button class="again-btn">Еще раз</button></div>`;
+function finishGame() {
+    timeEl.parentNode.classList.add('hide');
+    scoreEl.parentNode.classList.add('hide');
+
+    if (score > bestScore) {
+        bestScore = score;
+    }
+
+    board.innerHTML = `
+        <div><h1>Счет: <span class="primary">${score}</span></h1>
+        <p>Лучший счет: <span class="primary">${bestScore}</span></p>
+        <button class="again-btn">Еще раз</button></div>
+    `;
+}
+
+function tryAgain() {
+    screens[1].classList.remove('up');
+
+    score = 0;
+    setScore(score);
+
+    timeEl.parentElement.classList.remove('hide');
+    scoreEl.parentNode.classList.remove('hide');
+
+    board.innerHTML = '';
 }
 
 function createRandomCircle() {
@@ -113,6 +128,23 @@ function createRandomCircle() {
     circle.style.left = `${x}px`;
 
     board.append(circle);
+
+    // Багованное уменьшение кружков
+    // let timerSizeId = setInterval(() => {
+    //     if (size === 5) {
+    //         clearInterval(timerSizeId);
+    //         circle.remove();
+    //         createRandomCircle();
+    //         score--;
+    //         scoreEl.innerHTML = score;
+    //         console.log('стоп');
+    //     } else {
+    //         size--;
+    //         circle.style.width = `${size}px`;
+    //         circle.style.height = `${size}px`;
+    //         console.log(size);
+    //     }
+    // }, 300);
 }
 
 function getRamdomNumber(min, max) {
